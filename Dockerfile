@@ -27,7 +27,7 @@ ENV PNPM_STORE_DIR=/pnpm-store
 # Copy dependency manifests + patches first so the install layer
 # is cached as long as dependencies don't change.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
-RUN pnpm install --frozen-lockfile --store-dir=${PNPM_STORE_DIR}
+RUN --mount=type=cache,target=/pnpm-store pnpm install --frozen-lockfile --store-dir=${PNPM_STORE_DIR}
 
 # Copy full source after deps are installed
 COPY . .
