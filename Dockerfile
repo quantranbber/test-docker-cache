@@ -3,10 +3,7 @@
 # =====================================================================
 FROM node:24-bullseye AS base
 
-ARG IMAGE_TAG=notagset
-
-ENV IMAGE_TAG=${IMAGE_TAG} \
-    NODE_OPTIONS=--max-old-space-size=6000 \
+ENV NODE_OPTIONS=--max-old-space-size=6000 \
     PNPM_HOME=/root/.local/share/pnpm \
     PATH=/root/.local/share/pnpm:$PATH
 
@@ -38,6 +35,10 @@ RUN pnpm run build
 # Stage 3: runtime
 # =====================================================================
 FROM builder AS runtime
+
+ARG IMAGE_TAG=notagset
+
+ENV IMAGE_TAG=${IMAGE_TAG}
 
 COPY . .
 
