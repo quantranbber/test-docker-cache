@@ -1,0 +1,41 @@
+name: Simple Workflow
+
+on:
+  push:
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        id: build-image
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+          DOCKERFILE_NAME: Dockerfile
+
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Version: $VERSION".
+          export IMAGE_TAG="${VERSION}-${COMMIT_SHA:0:10}"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "Image Tag: $IMAGE_TAG"
+
+          docker buildx build \
+            -t testt:$IMAGE_TAG \
+            -t testt:latest \
+            --build-arg IMAGE_TAG=$IMAGE_TAG \
+            --cache-from type=gha,scope=$ECR_REPOSITORY \
+            --cache-to type=gha,mode=min,scope=$ECR_REPOSITORY \
+            --load \
+            -f $DOCKERFILE_NAME .
+          echo "image=testt:$IMAGE_TAG" >> $GITHUB_OUTPUT
